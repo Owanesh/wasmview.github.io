@@ -16,6 +16,7 @@ const NUM_SCREENSHOTS = CONFIG.number_of_screenshots;
 const OUTPUT_DIRECTORY = CONFIG.output_folder;
 
 const dev = process.env.NODE_ENV !== 'production'
+const IGNORE_SSL_ERRORS = CONFIG.ignore_ssl_errors === true;
 
 const preloadFile = fs.readFileSync(path.join(__dirname, './instrumentationCode.js'), 'utf8');
 // const binaryenJSFile = fs.readFileSync(path.join(__dirname, './binaryen.js'), 'utf8');
@@ -214,20 +215,19 @@ class Crawler {
             await page.evaluateOnNewDocument(preloadFile)
             page.on('workercreated', async worker => {
                 try {
-                    await worker.evaluate(wabtJSFile)
-                    await worker.evaluate(preloadFile)
+                    await worker.evaluate(wabtJSFile, { timeout: 60000 })
+                    await worker.evaluate(preloadFile, { timeout: 60000 })
                     await worker.evaluate(() => {
                         setTimeout(() => {
                             console.log(self.WebAssemblyCallLocations);
                         }, 2000)
-                    })
+                    }, { timeout: 60000 })
 
                     // await waitFor(3);
 
                     var currentWorkerWebAssembly = await worker.evaluateHandle(() => {
                         return self.WebAssemblyCallLocations;
-                    })
-
+                    }, { timeout: 60000 })
 
                     webAssemblyWorkers.push(currentWorkerWebAssembly);
                 } catch (err) {
@@ -314,7 +314,7 @@ class Crawler {
                             allRecordedWorkers = [];
 
 
-                            await page.waitFor(timeIntervalToWaitBetweenShots * 1000);
+                            await new Promise(res => setTimeout(res, timeIntervalToWaitBetweenShots * 1000));
                         } catch (screenshotErr) {
                             console.error(screenshotErr)
                         }
@@ -407,8 +407,8 @@ class Crawler {
             devtools: true,
             // dumpio: dev,
             args: [
-            ]
-
+            ],
+            ignoreHTTPSErrors: IGNORE_SSL_ERRORS
         });
     }
 

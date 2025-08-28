@@ -4,12 +4,12 @@ import Link from 'next/link';
 import Button from 'react-bootstrap/Button'
 import Router from 'next/router';
 
-const Result = ({action, results}) => {
-    const {fileResults, pageFound, graphDetails} = results;
+const Result = ({ action, results }) => {
+    const { fileResults, pageFound, graphDetails } = results;
     let actionLabel = '';
     let pageFoundLabel = '';
     let graphSection = <span></span>;
-    switch(action){
+    switch (action) {
         case 'upload':
             actionLabel = 'Upload';
             break;
@@ -17,15 +17,15 @@ const Result = ({action, results}) => {
             actionLabel = 'Scan';
             break;
     }
-    
-    if(pageFound){
+
+    if (pageFound) {
         pageFoundLabel = <span>for <a target="_blank" href={pageFound}>{pageFound}</a></span>
     }
 
-    if(graphDetails != null){
+    if (graphDetails != null) {
         graphSection = <div>
-           
-            <GraphComponent details={graphDetails}/>
+
+            <GraphComponent details={graphDetails} />
         </div>
     }
 
@@ -33,17 +33,20 @@ const Result = ({action, results}) => {
     let fileResultsView = <span></span>;
 
 
+    const handleBack = () => {
+        Router.reload('/');
+    };
     return (
         <div>
-            <Button variant="primary" onClick={()=> Router.back()}>
+            <Button variant="primary" onClick={handleBack}>
                 Back
             </Button>
-            <br/>
-            <br/>
+            <br />
+            <br />
             <h3>{actionLabel} Results {pageFoundLabel}</h3>
-            
+
             {fileResultsView}
-            <br/>
+            <br />
             {graphSection}
 
         </div>

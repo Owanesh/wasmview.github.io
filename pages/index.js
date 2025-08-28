@@ -68,26 +68,7 @@ class Index extends Component {
         clearInterval(this.timer)
     }
 
-    componentWillReceiveProps() {
-        const { pathname, query } = this.props.router
-        const { showResults } = query;
-        const { results, action } = this.state;
-
-        if (pathname == '/' && showResults) {
-            this.setState({
-                results: null,
-                action: null,
-                urlToScan: '',
-                urlInputError: false,
-                uploadInputError: false,
-                uploadLoading: false,
-                urlLoading: false,
-                uploadProgress: null
-            })
-            Router.replace('/');
-        }
-
-    }
+    // componentDidUpdate removed: do not reset state on navigation, only reset on mount or explicit user action
 
     componentDidMount() {
         const { pathname, query } = this.props.router
@@ -316,7 +297,7 @@ class Index extends Component {
         const resultsSection = !results ? <span></span> :
             (<Result action={action} results={results}></Result>);
 
-        const mainSection = !showResults ? requestSection : resultsSection
+        const mainSection = results ? resultsSection : requestSection;
         return (
             <div>
                 <Container>
