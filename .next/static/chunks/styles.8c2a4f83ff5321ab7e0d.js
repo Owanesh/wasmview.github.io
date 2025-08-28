@@ -1,1 +1,0 @@
-(window.webpackJsonp=window.webpackJsonp||[]).push([[2],{KygM:function(n,o,w){},iOjB:function(n,o,w){}}]);
