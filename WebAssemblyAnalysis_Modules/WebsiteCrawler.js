@@ -8,7 +8,7 @@ const writeFile = promisify(fs.writeFile);
 const puppeteer = require('puppeteer');
 const path = require('path');
 
-const uuidv1 = require('uuid/v1');
+const { v1: uuidv1 } = require('uuid');
 
 const CONFIG = require('../config.json');
 const TIME_TO_WAIT = CONFIG.time_to_wait;
@@ -66,7 +66,7 @@ class Crawler {
         this.browser = null;
     }
 
-    cleanDomain(domain){
+    cleanDomain(domain) {
         return domain.replace(/\//g, '__').replace(/:/g, '').replace(/\./g, '___').slice(0, 50);
     }
 
@@ -78,43 +78,43 @@ class Crawler {
                 return str !== undefined && str.match(/\S/g) != null
             });
         stackTraceFrames = stackTraceFrames.map((frame, index) => {
-                // frame = frame.replace(/Object\.newInstance\.exports\.<computed> \[as (.*)\]/g, "$1")
-                frame = frame.replace('Module.', '')
-                if (frame.includes('__puppeteer_evaluation_script__')) {
-                    return null;
-                }
+            // frame = frame.replace(/Object\.newInstance\.exports\.<computed> \[as (.*)\]/g, "$1")
+            frame = frame.replace('Module.', '')
+            if (frame.includes('__puppeteer_evaluation_script__')) {
+                return null;
+            }
 
-                if (frame.match(/<anonymous>:.*/)) {
-                    return null;
-                }
+            if (frame.match(/<anonymous>:.*/)) {
+                return null;
+            }
 
-                if (frame.includes('closureReturn')) {
-                    return null;
-                }
+            if (frame.includes('closureReturn')) {
+                return null;
+            }
 
-                if(wasmDebugFunctionNames != null){
-                    const frameRegexResult = frame.match(/wasm-function\[(.*)?\]:(.*)?/);
+            if (wasmDebugFunctionNames != null) {
+                const frameRegexResult = frame.match(/wasm-function\[(.*)?\]:(.*)?/);
 
-                    if(frameRegexResult != null){
-                        const functionIndex = frameRegexResult[1];
-                        let realName = wasmDebugFunctionNames[functionIndex]
-                        if (realName != null) {
-                            realName = realName.replace('$','');
-                            frame = `wasm-function___${realName}`;
-                        }
+                if (frameRegexResult != null) {
+                    const functionIndex = frameRegexResult[1];
+                    let realName = wasmDebugFunctionNames[functionIndex]
+                    if (realName != null) {
+                        realName = realName.replace('$', '');
+                        frame = `wasm-function___${realName}`;
                     }
                 }
+            }
 
-                frame = frame.replace(/(\(.*\))/g, "");
-                if (index === 0) {
-                    frame = frame.trim();
-                    frame = frame.replace(/^Object\./, '');
-
-                }
+            frame = frame.replace(/(\(.*\))/g, "");
+            if (index === 0) {
                 frame = frame.trim();
+                frame = frame.replace(/^Object\./, '');
 
-                return frame;
-            })
+            }
+            frame = frame.trim();
+
+            return frame;
+        })
             .filter(str => str != null);
 
         return stackTraceFrames;
@@ -167,7 +167,7 @@ class Crawler {
 
     formatInstrumentObject(webassemblyObject) {
 
-        if(webassemblyObject == null){
+        if (webassemblyObject == null) {
             return;
         }
         this.formatInstrumentFileObject(webassemblyObject);
@@ -197,11 +197,11 @@ class Crawler {
             let allRecordedWorkers = [];
 
             const cleanedURL = this.cleanDomain(domain);
-            const outputDomainDirectoryName = `${cleanedURL}-${uuidv1().substring(0,11)}`;
+            const outputDomainDirectoryName = `${cleanedURL}-${uuidv1().substring(0, 11)}`;
             const resolvedOutputPath = path.resolve(OUTPUT_DIRECTORY, outputDomainDirectoryName)
-            try{
+            try {
                 await mkdir(resolvedOutputPath);
-            } catch(e){
+            } catch (e) {
                 console.error(e);
             }
 
@@ -228,7 +228,7 @@ class Crawler {
                         return self.WebAssemblyCallLocations;
                     })
 
-    
+
                     webAssemblyWorkers.push(currentWorkerWebAssembly);
                 } catch (err) {
                     console.error('Worker Eval', err)
@@ -265,26 +265,26 @@ class Crawler {
 
 
                     const timeIntervalToWaitBetweenShots = Math.floor((TIME_TO_WAIT - 1) / NUM_SCREENSHOTS);
-                    for(let i = 1; i <= NUM_SCREENSHOTS; i++ ){
-                        try{
-                            const screenshotOutputPath = path.resolve(resolvedOutputPath,`Screenshot_${i}.png`);
+                    for (let i = 1; i <= NUM_SCREENSHOTS; i++) {
+                        try {
+                            const screenshotOutputPath = path.resolve(resolvedOutputPath, `Screenshot_${i}.png`);
                             await page.screenshot({
                                 path: screenshotOutputPath,
                                 fullPage: false
                             })
 
-                            
+
 
                             try {
                                 const windowCallsJSHandle = await page.evaluateHandle(() => window.WebAssemblyCallLocations)
                                 windowWebAssemblyHandle = await windowCallsJSHandle.jsonValue();
                                 this.formatInstrumentObject(windowWebAssemblyHandle);
-                            } catch(windowHandleError) {
+                            } catch (windowHandleError) {
                                 console.error(windowHandleError);
                             }
-    
-    
-    
+
+
+
                             if (webAssemblyWorkers.length > 0) {
                                 const workerWebAssemblyJson = await Promise.all(webAssemblyWorkers.map(async x => {
                                     try {
@@ -304,9 +304,9 @@ class Crawler {
                                 workers: allRecordedWorkers
                             }
 
-                            try{
+                            try {
                                 writeFile(path.resolve(resolvedOutputPath, `log_${i}.json`), JSON.stringify(logDetails));
-                            } catch(writeLogError){
+                            } catch (writeLogError) {
                                 console.error(writeLogError);
                             }
 
@@ -315,7 +315,7 @@ class Crawler {
 
 
                             await page.waitFor(timeIntervalToWaitBetweenShots * 1000);
-                        } catch(screenshotErr){
+                        } catch (screenshotErr) {
                             console.error(screenshotErr)
                         }
                     }
@@ -326,7 +326,7 @@ class Crawler {
                             const windowCallsJSHandle = await page.evaluateHandle(() => window.WebAssemblyCallLocations)
                             windowWebAssemblyHandle = await windowCallsJSHandle.jsonValue();
                             this.formatInstrumentObject(windowWebAssemblyHandle);
-                        } catch(windowHandleError) {
+                        } catch (windowHandleError) {
                             console.error(windowHandleError);
                         }
 
@@ -366,9 +366,9 @@ class Crawler {
                                 graphDetails: graphDetails
                             }
 
-                            try{
+                            try {
                                 writeFile(path.resolve(resolvedOutputPath, 'logs.json'), JSON.stringify(graphDetails));
-                            } catch(writeLogError){
+                            } catch (writeLogError) {
                                 console.error(writeLogError);
                             }
                         }
@@ -406,7 +406,7 @@ class Crawler {
         this.browser = await puppeteer.launch({
             devtools: true,
             // dumpio: dev,
-            args:[
+            args: [
             ]
 
         });

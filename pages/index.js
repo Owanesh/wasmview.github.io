@@ -7,13 +7,12 @@ import Result from '../components/results';
 import ReactLoading from 'react-loading';
 import { Line, Circle } from 'rc-progress';
 import axios from 'axios';
-import '../styles/index.css';
 
 
 const TIME_TO_WAIT = 30;
 class Index extends Component {
 
-    constructor(props){
+    constructor(props) {
         super(props);
 
         this.state = {
@@ -48,9 +47,9 @@ class Index extends Component {
 
         })
 
-        this.timer = setInterval(() =>{ 
+        this.timer = setInterval(() => {
             const secondsLeft = this.state.secondsLeft;
-            if(secondsLeft <= 0){
+            if (secondsLeft <= 0) {
                 this.setState({
                     isOn: false,
                 })
@@ -61,20 +60,20 @@ class Index extends Component {
                 secondsLeft: secondsLeft - 1,
             })
         }
-        , 1000);
+            , 1000);
     }
 
     stopTimer() {
-        this.setState({isOn: false})
+        this.setState({ isOn: false })
         clearInterval(this.timer)
     }
 
-    componentWillReceiveProps(){
+    componentWillReceiveProps() {
         const { pathname, query } = this.props.router
-        const {showResults} = query;
-        const {results, action}  =this.state;
+        const { showResults } = query;
+        const { results, action } = this.state;
 
-        if(pathname == '/' && showResults){
+        if (pathname == '/' && showResults) {
             this.setState({
                 results: null,
                 action: null,
@@ -87,15 +86,15 @@ class Index extends Component {
             })
             Router.replace('/');
         }
-        
+
     }
 
-    componentDidMount(){
+    componentDidMount() {
         const { pathname, query } = this.props.router
-        const {showResults} = query;
-        const {results, action}  =this.state;
+        const { showResults } = query;
+        const { results, action } = this.state;
 
-        if(showResults && !results){
+        if (showResults && !results) {
             Router.replace('/');
         }
 
@@ -111,51 +110,51 @@ class Index extends Component {
         })
     }
 
-    handleURLKeyUp(e){
+    handleURLKeyUp(e) {
         this.setState({
             urlInputError: false
         });
     }
 
-    handleURLKeyDown(e){
+    handleURLKeyDown(e) {
         if (e.key === 'Enter') {
             this.handleScanClick();
-          }
+        }
     }
 
-    hanldeUploadChange(e){
+    hanldeUploadChange(e) {
         this.setState({
             uploadInputError: false,
         });
     }
 
-    handleUploadClick(){
-        if(this.state.uploadLoading){
+    handleUploadClick() {
+        if (this.state.uploadLoading) {
             return;
         }
         const router = this.props.router;
         const href = '/?showResults=1';
         const as = '/results';
-        
-        if(this.fileInput.current.files.length < 1){
-            this.setState({uploadInputError: true});
+
+        if (this.fileInput.current.files.length < 1) {
+            this.setState({ uploadInputError: true });
             return;
-        } 
+        }
         const file = this.fileInput.current.files[0]
 
-        if(!file.name.endsWith('.wasm')){
-            this.setState({uploadInputError: true});
+        if (!file.name.endsWith('.wasm')) {
+            this.setState({ uploadInputError: true });
             return;
         }
         this.setState({
             uploadInputError: false,
             action: 'upload',
         });
-        
+
 
         const data = new FormData();
         data.append('wasm-file', file);
-        data.append('action','upload');
+        data.append('action', 'upload');
 
         const xhr = new XMLHttpRequest();
         xhr.addEventListener('load', (e) => {
@@ -179,13 +178,15 @@ class Index extends Component {
         });
 
         xhr.upload.addEventListener("load", event => {
-            const uploadProgress = { state: "done", 
-            percentage: 100 };
+            const uploadProgress = {
+                state: "done",
+                percentage: 100
+            };
             this.setState({ uploadProgress: uploadProgress });
         });
 
         xhr.responseType = 'json';
-        xhr.open('post', '/uploadFile'); 
+        xhr.open('post', '/uploadFile');
         xhr.send(data)
 
         this.setState({
@@ -193,31 +194,31 @@ class Index extends Component {
         })
     }
 
-    handleURLChange(e){
+    handleURLChange(e) {
         this.setState({
             urlToScan: e.target.value
         });
 
     }
 
-    handleScanClick(){
-        if(this.state.urlLoading){
+    handleScanClick() {
+        if (this.state.urlLoading) {
             return;
         }
 
         const href = '/?showResults=1';
         const as = '/results';
-        const {action, urlToScan} = this.state;
+        const { action, urlToScan } = this.state;
         //Obtained from: https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
         var expression = /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi;
         var regex = new RegExp(expression);
-        
-        if(!urlToScan.match(regex)){
+
+        if (!urlToScan.match(regex)) {
             this.setState({
                 urlInputError: true
             });
             return;
-        }  else {
+        } else {
             this.setState({
                 urlInputError: false,
                 action: 'scan',
@@ -231,96 +232,96 @@ class Index extends Component {
 
         this.startTimer();
 
-        axios.post('/scan',{
+        axios.post('/scan', {
             action: 'scan', urlToScan
         })
-        .then((response) => {
-            const data = response.data;
-            this.setState({
-                results: data,
-                urlLoading: false
-            });
-            Router.push(href, as);
-        })
-        
+            .then((response) => {
+                const data = response.data;
+                this.setState({
+                    results: data,
+                    urlLoading: false
+                });
+                Router.push(href, as);
+            })
 
-        
+
+
     }
 
     render() {
         const { pathname, query } = this.props.router
-        const {results, action, urlToScan, urlInputError, uploadInputError, uploadLoading, urlLoading, uploadProgress, secondsLeft, isOn}  = this.state;
-        const {showResults} = query;
-        const urlButtonText = urlLoading? <ReactLoading type="bars" height={'100%'} width={30}/> : 'Scan'
+        const { results, action, urlToScan, urlInputError, uploadInputError, uploadLoading, urlLoading, uploadProgress, secondsLeft, isOn } = this.state;
+        const { showResults } = query;
+        const urlButtonText = urlLoading ? <ReactLoading type="bars" height={'100%'} width={30} /> : 'Scan'
         let scanProgressSection = null;
 
-        if(uploadProgress){
-            const {percentage, state} = uploadProgress
-            if(state !== 'done'){
-                uploadProgressSection =  <span> Upload complete</span>
+        if (uploadProgress) {
+            const { percentage, state } = uploadProgress
+            if (state !== 'done') {
+                uploadProgressSection = <span> Upload complete</span>
             }
             uploadProgressSection = <div>
-                <br/>
+                <br />
                 <span>Upload Progress: </span>
-                <br/>
+                <br />
                 <Line percent={percentage}
-                strokeWidth="2"
-                strokeColor="#98C964" />
-            </div> 
+                    strokeWidth="2"
+                    strokeColor="#98C964" />
+            </div>
         }
 
-        if(urlLoading){
-            const percentage = 100* (TIME_TO_WAIT - secondsLeft) / TIME_TO_WAIT;
-             scanProgressSection = <div>
-                <br/>
+        if (urlLoading) {
+            const percentage = 100 * (TIME_TO_WAIT - secondsLeft) / TIME_TO_WAIT;
+            scanProgressSection = <div>
+                <br />
                 <span>Scan Progress: </span>
-                <br/>
+                <br />
                 <Line percent={percentage}
-                strokeWidth="2"
-                strokeColor="#98C964" />
-            </div> 
+                    strokeWidth="2"
+                    strokeColor="#98C964" />
+            </div>
         }
 
         const headerSection = (
             <div></div>
-            )
+        )
         const requestSection = (
             <div>
                 <p></p>
-                    <Form.Group controlId="urlToScan">
-                        <Form.Label className="lead">Enter a URL to scan here:</Form.Label>
-                        <Form.Control isInvalid={urlInputError}
-                                     placeholder="http://example.com"
-                                        accept=".wasm" 
-                                        value={urlToScan}
-                                        onChange={this.handleURLChange}
-                                        onKeyUp={this.handleURLKeyUp}
-                                        onKeyDown={this.handleURLKeyDown}
-                                        maxLength={1900}
-                                        />
-                        {scanProgressSection}
+                <Form.Group controlId="urlToScan">
+                    <Form.Label className="lead">Enter a URL to scan here:</Form.Label>
+                    <Form.Control isInvalid={urlInputError}
+                        placeholder="http://example.com"
+                        accept=".wasm"
+                        value={urlToScan}
+                        onChange={this.handleURLChange}
+                        onKeyUp={this.handleURLKeyUp}
+                        onKeyDown={this.handleURLKeyDown}
+                        maxLength={1900}
+                    />
+                    {scanProgressSection}
 
-                        <Form.Control.Feedback type="invalid">
-                            Please provide a valid URL
-                        </Form.Control.Feedback>
-                    </Form.Group>
+                    <Form.Control.Feedback type="invalid">
+                        Please provide a valid URL
+                    </Form.Control.Feedback>
+                </Form.Group>
                 <p>
-                <Button variant="primary" type="button" onClick={this.handleScanClick}>
-                    {urlButtonText}
-                </Button>
+                    <Button variant="primary" type="button" onClick={this.handleScanClick}>
+                        {urlButtonText}
+                    </Button>
                 </p>
             </div>
         )
 
-        const resultsSection = !results ? <span></span> : 
-        (<Result action={action} results={results}></Result>);
+        const resultsSection = !results ? <span></span> :
+            (<Result action={action} results={results}></Result>);
 
         const mainSection = !showResults ? requestSection : resultsSection
         return (
             <div>
                 <Container>
                     {headerSection}
-                        {mainSection}
+                    {mainSection}
                 </Container>
             </div>
         )
